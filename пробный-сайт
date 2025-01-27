@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Опрос о хобби</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .question {
+            margin: 10px 0;
+        }
+        button {
+            padding: 10px;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+        .statistics {
+            margin-top: 20px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <h2>Выберите хобби, которыми вы увлекаетесь:</h2>
+    <form id="survey-form">
+        <div class="question" data-hobby="Музыка">Музыка:
+            <select>
+                <option value="да">да</option>
+                <option value="нет">нет</option>
+                <option value="не знаю">не знаю</option>
+                <option value="возможно">возможно</option>
+                <option value="может быть">может быть</option>
+            </select>
+        </div>
+        <div class="question" data-hobby="Компьютер">Компьютер:
+            <select>
+                <option value="да">да</option>
+                <option value="нет">нет</option>
+                <option value="не знаю">не знаю</option>
+                <option value="возможно">возможно</option>
+                <option value="может быть">может быть</option>
+            </select>
+        </div>
+        <div class="question" data-hobby="Социальные сети">Социальные сети:
+            <select>
+                <option value="да">да</option>
+                <option value="нет">нет</option>
+                <option value="не знаю">не знаю</option>
+                <option value="возможно">возможно</option>
+                <option value="может быть">может быть</option>
+            </select>
+        </div>
+        <div class="question" data-hobby="Чтение книг">Чтение книг:
+            <select>
+                <option value="да">да</option>
+                <option value="нет">нет</option>
+                <option value="не знаю">не знаю</option>
+                <option value="возможно">возможно</option>
+                <option value="может быть">может быть</option>
+            </select>
+        </div>
+        <button type="submit">Отправить ответы</button>
+    </form>
+
+    <h2>📊 Статистика:</h2>
+    <div class="statistics" id="statistics"></div>
+
+    <script>
+        document.getElementById('survey-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            let answers = JSON.parse(localStorage.getItem('surveyData')) || {};
+            document.querySelectorAll('.question').forEach(question => {
+                let hobby = question.getAttribute('data-hobby');
+                let answer = question.querySelector('select').value;
+                if (!answers[hobby]) answers[hobby] = { "да": 0, "нет": 0, "не знаю": 0, "возможно": 0, "может быть": 0 };
+                answers[hobby][answer]++;
+            });
+
+            localStorage.setItem('surveyData', JSON.stringify(answers));
+            updateStatistics();
+        });
+
+        function updateStatistics() {
+            let answers = JSON.parse(localStorage.getItem('surveyData')) || {};
+            let statsDiv = document.getElementById('statistics');
+            statsDiv.innerHTML = "";
+            for (let hobby in answers) {
+                statsDiv.innerHTML += `<strong>${hobby}:</strong> ${JSON.stringify(answers[hobby])}<br>`;
+            }
+        }
+
+        updateStatistics();
+    </script>
+</body>
+</html>
