@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Опрос о хобби</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1e1e1e;
+            color: #fff;
+            max-width: 700px;
+            margin: auto;
+            padding: 20px;
+            text-align: center;
+        }
+        h2 {
+            color: #ffcc00;
+        }
+        .question {
+            margin: 15px 0;
+            padding: 10px;
+            background: #2a2a2a;
+            border-radius: 10px;
+        }
+        .buttons {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        button {
+            background: #444;
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover {
+            background: #ffcc00;
+            color: #000;
+        }
+        .selected {
+            background: #ffcc00 !important;
+            color: #000 !important;
+        }
+        #save-button, #clear-button {
+            margin-top: 20px;
+            font-size: 16px;
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+        #save-button {
+            background: #008000;
+        }
+        #clear-button {
+            background: #d32f2f;
+            color: #fff;
+            margin-left: 10px;
+        }
+        .statistics {
+            margin-top: 20px;
+            text-align: left;
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        .stat-item {
+            padding: 10px;
+            background: #333;
+            border-radius: 5px;
+            margin-bottom: 25px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Выберите хобби, которыми вы увлекаетесь:</h2>
+    <div id="survey-form"></div>
+
+    <button id="save-button" onclick="saveSurvey()">Сохранить ответы</button>
+    <button id="clear-button" onclick="clearStatistics()">Очистить статистику</button>
+
+    <h2>📊 Статистика:</h2>
+    <div class="statistics" id="statistics"></div>
+
+    <script>
+        const hobbies = [
+            "Музыка", "Компьютер", "Социальные сети", "Шопинг", "Вышивание", 
+            "Рыбалка", "Сочинение стихов, рассказов", "Чтение книг", "Коллекционирование", 
+            "Спорт", "Путешествие", "Обучение"
+        ];
+        let userAnswers = {};
+
+        function createSurvey() {
+            const form = document.getElementById("survey-form");
+            hobbies.forEach(hobby => {
+                const questionDiv = document.createElement("div");
+                questionDiv.classList.add("question");
+                questionDiv.innerHTML = `<strong>${hobby}:</strong>`;
+
+                const buttonContainer = document.createElement("div");
+                buttonContainer.classList.add("buttons");
+
+                ["да", "нет", "не знаю", "возможно", "может быть"].forEach(answer => {
+                    const button = document.createElement("button");
+                    button.innerText = answer;
+                    button.onclick = () => selectAnswer(hobby, answer, button);
+                    buttonContainer.appendChild(button);
+                });
+
+                questionDiv.appendChild(buttonContainer);
+                form.appendChild(questionDiv);
+            });
+        }
+
+        function selectAnswer(hobby, answer, button) {
+            userAnswers[hobby] = answer;
+            let buttons = button.parentNode.querySelectorAll("button");
+            buttons.forEach(btn => btn.classList.remove("selected"));
+            button.classList.add("selected");
+        }
+
+        function saveSurvey() {
+            let storedAnswers = JSON.parse(localStorage.getItem('surveyData')) || {};
+            for (let hobby in userAnswers) {
+                let answer = userAnswers[hobby];
+                if (!storedAnswers[hobby]) {
+                    storedAnswers[hobby] = { "да": 0, "нет": 0, "не знаю": 0, "возможно": 0, "может быть": 0 };
+                }
+                storedAnswers[hobby][answer]++;
+            }
+            localStorage.setItem('surveyData', JSON.stringify(storedAnswers));
+            updateStatistics();
+            alert("Ваши ответы сохранены!");
+        }
+
+        function updateStatistics() {
+            let storedAnswers = JSON.parse(localStorage.getItem('surveyData')) || {};
+            let statsDiv = document.getElementById('statistics');
+            statsDiv.innerHTML = "";
+
+            for (let hobby in storedAnswers) {
+                let totalResponses = Object.values(storedAnswers[hobby]).reduce((a, b) => a + b, 0);
+                if (totalResponses === 0) continue;
+
+                let percentages = {};
+                for (let answer in storedAnswers[hobby]) {
+                    percentages[answer] = ((storedAnswers[hobby][answer] / totalResponses) * 100).toFixed(1);
+                }
+
+                let statItem = document.createElement("div");
+                statItem.classList.add("stat-item");
+                statItem.innerHTML = `<strong>${hobby}:</strong> 
+                    Да: ${percentages["да"] || 0}% | 
+                    Нет: ${percentages["нет"] || 0}% | 
+                    Не знаю: ${percentages["не знаю"] || 0}% | 
+                    Возможно: ${percentages["возможно"] || 0}% | 
+                    Может быть: ${percentages["может быть"] || 0}%`;
+
+                statsDiv.appendChild(statItem);
+            }
+        }
+
+        function clearStatistics() {
+            const password = prompt("Введите пароль для очистки статистики:");
+            if (password === "admin123") { // Здесь указываем секретный пароль
+                localStorage.removeItem("surveyData");
+                updateStatistics();
+                alert("Статистика очищена!");
+            } else {
+                alert("Неверный пароль!");
+            }
+        }
+
+        createSurvey();
+        updateStatistics();
+    </script>
+</body>
+</html>
